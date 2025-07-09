@@ -4,7 +4,7 @@ A modern, full-stack contact management application built with React.js frontend
 
 ---
 
-## 🗺️ Application Workflow Diagram
+##  Application Workflow Diagram
 
 Below is a concise workflow diagram of the Contact Manager application, representing the main user flows and backend interactions:
 
@@ -57,29 +57,91 @@ flowchart TD
 
 ---
 
-## 🚀 Features
+## Database Configuration
 
-### ✅ Core Functionality
+The backend uses **MongoDB** for storing contacts.
+
+- **Default URI:** `mongodb://127.0.0.1`
+- **Database Name:** `Contacts`
+- **Collection Name:** `contacts`
+- **Configuration Location:** `backend/database.js`
+- **Indexes:**
+  - Unique index on `email`
+  - Index on `name`
+  - Index on `createdAt`
+
+**To change the database URI or name:**
+- Edit the `this.uri` and `this.dbName` fields in the `ContactDatabase` class constructor in `backend/database.js`.
+- For production, you can use an environment variable (e.g., `MONGODB_URI`) and update the code to use `process.env.MONGODB_URI` if present.
+
+**Example (in `backend/database.js`):**
+```js
+this.uri = process.env.MONGODB_URI || "mongodb://127.0.0.1";
+this.dbName = process.env.DB_NAME || "Contacts";
+```
+
+---
+
+## 🏗️ Project Structure
+
+```
+Contact-Manager/
+├── backend/
+│   ├── database.js
+│   ├── server.js
+│   ├── server.basic.test.js
+│   ├── package.json
+│   ├── package-lock.json
+│   └── node_modules/           # (ignored by git)
+├── frontend/
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── node_modules/           # (ignored by git)
+│   ├── public/
+│   │   └── index.html
+│   └── src/
+│       ├── App.js
+│       ├── App.css
+│       ├── App.test.js
+│       ├── index.js
+│       ├── components/
+│       │   ├── ContactForm.js
+│       │   ├── ContactList.js
+│       │   ├── ContactItem.js
+│       │   ├── SearchBox.js
+│       │   └── Message.js
+│       └── services/
+│           ├── api.js
+│           └── api.test.js
+├── .gitignore
+└── README.md
+```
+
+---
+
+##  Features
+
+###  Core Functionality
 - **Add Contacts**: Add new contacts with name and email validation
 - **View Contacts**: Display all contacts in a clean, card-based interface
 - **Search Contacts**: Real-time search by name or email
 - **Delete Contacts**: Remove contacts with confirmation dialog
 
-### 🎨 User Experience
+### User Experience
 - **Modern UI**: Clean, responsive design with hover effects
 - **Form Validation**: Real-time validation with helpful error messages
 - **Loading States**: Visual feedback during API operations
 - **Success/Error Messages**: Clear feedback for all user actions
 - **Responsive Design**: Works perfectly on desktop, tablet, and mobile
 
-### 🔧 Technical Features
+###  Technical Features
 - **Component Architecture**: Modular React components
 - **API Service Layer**: Clean separation of API calls
 - **Error Handling**: Comprehensive error handling and recovery
 - **RESTful API**: Well-designed backend endpoints
 - **Input Validation**: Both frontend and backend validation
 
-## 🛠️ Technology Stack
+##  Technology Stack
 
 ### Frontend
 - **React.js** - Modern UI framework
@@ -92,7 +154,7 @@ flowchart TD
 - **express-validator** - Input validation
 - **CORS** - Cross-origin resource sharing
 
-## 📦 Installation & Setup
+## Installation & Setup
 
 ### Prerequisites
 - Node.js (v14 or higher)
@@ -114,7 +176,7 @@ npm start
 ```
 The frontend will run on `http://localhost:3000`
 
-## 🧪 Testing
+## Testing
 
 ### Frontend Tests
 ```bash
@@ -130,54 +192,12 @@ npm test
 
 ### Test Coverage
 The application includes comprehensive tests covering:
-- ✅ Component rendering
-- ✅ User interactions
-- ✅ Form validation
-- ✅ API endpoints
-- ✅ Error handling
+-  Component rendering
+-  User interactions
+-  Form validation
+-  API endpoints
+-  Error handling
 
-## 📸 Screenshots & Demo
-
-### Application Views
-1. **Main Interface**: Clean, modern contact list
-2. **Add Contact Form**: User-friendly input form
-3. **Search Results**: Real-time filtering
-4. **Empty State**: No contacts view
-5. **Error States**: Validation and network errors
-6. **Mobile View**: Responsive design
-
-### Demo Video Script
-Create a 2-3 minute demo showing:
-1. **Introduction** (30s) - App overview
-2. **Adding Contacts** (45s) - Form usage and validation
-3. **Searching** (30s) - Real-time search functionality
-4. **Managing Contacts** (30s) - Delete operations
-5. **Error Handling** (15s) - Error states and recovery
-
-## 🏗️ Project Structure
-
-```
-Contact-Manager/
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── ContactForm.js
-│   │   │   ├── ContactList.js
-│   │   │   ├── ContactItem.js
-│   │   │   ├── SearchBox.js
-│   │   │   └── Message.js
-│   │   ├── services/
-│   │   │   └── api.js
-│   │   ├── App.js
-│   │   ├── App.css
-│   │   └── index.js
-│   └── package.json
-├── backend/
-│   ├── server.js
-│   ├── database.js
-│   └── package.json
-└── README.md
-```
 
 ## 🔌 API Endpoints
 
@@ -189,7 +209,7 @@ Contact-Manager/
 | GET | `/api/contacts/search?q=term` | Search contacts |
 | GET | `/api/health` | Health check |
 
-## 🎯 Key Features Implementation
+##  Key Features Implementation
 
 ### Search Functionality
 - **Real-time search** as you type
@@ -209,7 +229,7 @@ Contact-Manager/
 - **Graceful degradation**
 - **Loading states**
 
-## 🚀 Deployment
+##  Deployment
 
 ### Frontend Deployment
 ```bash
@@ -223,24 +243,14 @@ Deploy the `build` folder to your hosting service.
 cd backend
 npm start
 ```
-Deploy to your Node.js hosting service (Heroku, Vercel, etc.).
 
-## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Submit a pull request
-
-## 📝 License
+## License
 
 This project is open source and available under the [MIT License](LICENSE).
 
-## 🆘 Support
 
-For support or questions, please open an issue in the repository.
 
 ---
 
-**Built with ❤️ using React.js and Node.js** 
+**Built  using React.js and Node.js** 
