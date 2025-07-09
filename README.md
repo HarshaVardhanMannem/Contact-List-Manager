@@ -4,7 +4,7 @@ A modern, full-stack contact management application built with React.js frontend
 
 ---
 
-## 🚀 How to Run This App
+## How to Run This App
 
 1. **Clone the repository:**
    ```bash
@@ -28,7 +28,7 @@ A modern, full-stack contact management application built with React.js frontend
 
 ---
 
-## 📝 Solution Overview & Design Decisions
+##  Solution Overview & Design Decisions
 
 This project demonstrates a clean, maintainable approach to building a full-stack Contact List Manager. The backend is built with Node.js/Express and MongoDB, while the frontend uses React for a responsive, dynamic UI.
 
