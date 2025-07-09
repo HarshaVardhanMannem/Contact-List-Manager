@@ -79,7 +79,9 @@ const validateContact = [
   body('name')
     .trim()
     .isLength({ min: 1, max: 50 })
-    .withMessage('Name must be between 1 and 50 characters'),
+    .withMessage('Name must be between 1 and 50 characters')
+    .matches(/^[A-Za-z\s]+$/)
+    .withMessage('Name must only contain letters and spaces'),
   body('email')
     .trim()
     .isEmail()
@@ -288,6 +290,66 @@ describe('Contact Manager API - Basic Tests', () => {
       
       expect(response.body).toHaveProperty('success', false);
       expect(response.body).toHaveProperty('errors');
+    });
+
+    test('should reject contact with name containing numbers', async () => {
+      const contactData = {
+        name: 'John123',
+        email: 'test@example.com'
+      };
+
+      const response = await request(app)
+        .post('/api/contacts')
+        .send(contactData)
+        .expect(400);
+      
+      expect(response.body).toHaveProperty('success', false);
+      expect(response.body).toHaveProperty('errors');
+      expect(response.body.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            msg: 'Name must only contain letters and spaces'
+          })
+        ])
+      );
+    });
+
+    test('should reject contact with name containing symbols', async () => {
+      const contactData = {
+        name: 'John@Doe',
+        email: 'test@example.com'
+      };
+
+      const response = await request(app)
+        .post('/api/contacts')
+        .send(contactData)
+        .expect(400);
+      
+      expect(response.body).toHaveProperty('success', false);
+      expect(response.body).toHaveProperty('errors');
+      expect(response.body.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            msg: 'Name must only contain letters and spaces'
+          })
+        ])
+      );
+    });
+
+    test('should accept contact with name containing only letters and spaces', async () => {
+      const contactData = {
+        name: 'John Doe Smith',
+        email: 'test@example.com'
+      };
+
+      const response = await request(app)
+        .post('/api/contacts')
+        .send(contactData)
+        .expect(201);
+      
+      expect(response.body).toHaveProperty('success', true);
+      expect(response.body).toHaveProperty('data');
+      expect(response.body).toHaveProperty('message', 'Contact added successfully');
     });
   });
 

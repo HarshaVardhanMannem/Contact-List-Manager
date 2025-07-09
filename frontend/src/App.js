@@ -107,6 +107,14 @@ function App() {
       return;
     }
     
+    // Validate name format - should not contain numbers or symbols
+    const nameRegex = /^[a-zA-Z\s]+$/;
+    if (!nameRegex.test(name.trim())) {
+      showMessage('Name should only contain letters and spaces. Numbers and symbols are not allowed.', 'error');
+      if (nameInput.current) nameInput.current.focus();
+      return;
+    }
+    
     // Validate email format using regex
     if (!/\S+@\S+\.\S+/.test(email)) {
       showMessage('Please enter a valid email address', 'error');

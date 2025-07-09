@@ -206,6 +206,46 @@ describe('API Service - Unit Tests', () => {
       });
     });
 
+    test('handles name format validation error', async () => {
+      // Mock name format validation error response
+      fetch.mockResolvedValueOnce({
+        status: 400,
+        json: () => Promise.resolve({
+          success: false,
+          errors: [{ msg: 'Name must only contain letters and spaces' }]
+        })
+      });
+
+      // Call add contact with name containing numbers
+      const result = await addContact('John123', 'john@example.com');
+
+      // Verify name format validation error is properly handled
+      expect(result).toEqual({
+        success: false,
+        errors: [{ msg: 'Name must only contain letters and spaces' }]
+      });
+    });
+
+    test('handles name with symbols validation error', async () => {
+      // Mock name format validation error response
+      fetch.mockResolvedValueOnce({
+        status: 400,
+        json: () => Promise.resolve({
+          success: false,
+          errors: [{ msg: 'Name must only contain letters and spaces' }]
+        })
+      });
+
+      // Call add contact with name containing symbols
+      const result = await addContact('John@Doe', 'john@example.com');
+
+      // Verify name format validation error is properly handled
+      expect(result).toEqual({
+        success: false,
+        errors: [{ msg: 'Name must only contain letters and spaces' }]
+      });
+    });
+
     test('handles network error', async () => {
       // Mock network error
       fetch.mockRejectedValueOnce(new Error('Network error'));

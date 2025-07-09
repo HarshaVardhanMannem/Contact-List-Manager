@@ -79,6 +79,42 @@ input[type="email"]:focus {
     box-shadow: 0 0 0 3px #a5b4fc44;
 }
 
+/* Error styling for input fields */
+input[type="text"].error,
+input[type="email"].error {
+    border-color: #dc3545;
+    background: #fff5f5;
+    box-shadow: 0 0 0 3px #dc354544;
+}
+
+input[type="text"].error:focus,
+input[type="email"].error:focus {
+    border-color: #dc3545;
+    background: #fff5f5;
+    box-shadow: 0 0 0 3px #dc354544;
+}
+
+/* Error message styling */
+.error-message {
+    color: #dc3545;
+    font-size: 0.9em;
+    margin-top: 6px;
+    font-weight: 600;
+    padding: 4px 0;
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .search-box {
     width: 100%;
     padding: 17px 18px 17px 60px;

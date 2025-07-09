@@ -230,6 +230,136 @@ describe('Contact Manager App - Complete Tests', () => {
       expect(screen.getByText('Please enter a valid email address')).toBeInTheDocument();
     });
 
+    test('shows error for name containing numbers', async () => {
+      // Mock fetch to return empty data
+      fetch.mockImplementationOnce(() => 
+        Promise.resolve({
+          json: () => Promise.resolve({ success: true, data: [] })
+        })
+      );
+
+      await act(async () => {
+        render(<App />);
+      });
+      
+      // Get form elements
+      const nameInput = screen.getByLabelText('Name:');
+      const emailInput = screen.getByLabelText('Email:');
+      const addButton = screen.getByText('Add Contact');
+      
+      // Fill form with name containing numbers
+      await act(async () => {
+        fireEvent.change(nameInput, { target: { value: 'John123' } });
+        fireEvent.change(emailInput, { target: { value: 'john@example.com' } });
+        fireEvent.click(addButton);
+      });
+      
+      // Verify name validation error appears in the message area (form submission error)
+      const errorMessages = screen.getAllByText('Name should only contain letters and spaces. Numbers and symbols are not allowed.');
+      expect(errorMessages).toHaveLength(2); // One in form, one in message area
+      
+      // Check that the message area error is present
+      const messageAreaError = screen.getByText('Name should only contain letters and spaces. Numbers and symbols are not allowed.', { selector: '.message.error' });
+      expect(messageAreaError).toBeInTheDocument();
+    });
+
+    test('shows error for name containing symbols', async () => {
+      // Mock fetch to return empty data
+      fetch.mockImplementationOnce(() => 
+        Promise.resolve({
+          json: () => Promise.resolve({ success: true, data: [] })
+        })
+      );
+
+      await act(async () => {
+        render(<App />);
+      });
+      
+      // Get form elements
+      const nameInput = screen.getByLabelText('Name:');
+      const emailInput = screen.getByLabelText('Email:');
+      const addButton = screen.getByText('Add Contact');
+      
+      // Fill form with name containing symbols
+      await act(async () => {
+        fireEvent.change(nameInput, { target: { value: 'John@Doe' } });
+        fireEvent.change(emailInput, { target: { value: 'john@example.com' } });
+        fireEvent.click(addButton);
+      });
+      
+      // Verify name validation error appears in the message area (form submission error)
+      const errorMessages = screen.getAllByText('Name should only contain letters and spaces. Numbers and symbols are not allowed.');
+      expect(errorMessages).toHaveLength(2); // One in form, one in message area
+      
+      // Check that the message area error is present
+      const messageAreaError = screen.getByText('Name should only contain letters and spaces. Numbers and symbols are not allowed.', { selector: '.message.error' });
+      expect(messageAreaError).toBeInTheDocument();
+    });
+
+    test('shows real-time validation error for invalid name', async () => {
+      // Mock fetch to return empty data
+      fetch.mockImplementationOnce(() => 
+        Promise.resolve({
+          json: () => Promise.resolve({ success: true, data: [] })
+        })
+      );
+
+      await act(async () => {
+        render(<App />);
+      });
+      
+      // Get name input
+      const nameInput = screen.getByLabelText('Name:');
+      
+      // Type invalid name with numbers
+      await act(async () => {
+        fireEvent.change(nameInput, { target: { value: 'John123' } });
+      });
+      
+      // Verify real-time validation error appears in the form
+      const formError = screen.getByText('Name should only contain letters and spaces. Numbers and symbols are not allowed.', { selector: '.error-message' });
+      expect(formError).toBeInTheDocument();
+      
+      // Verify input has error styling
+      expect(nameInput).toHaveClass('error');
+    });
+
+    test('removes validation error when name becomes valid', async () => {
+      // Mock fetch to return empty data
+      fetch.mockImplementationOnce(() => 
+        Promise.resolve({
+          json: () => Promise.resolve({ success: true, data: [] })
+        })
+      );
+
+      await act(async () => {
+        render(<App />);
+      });
+      
+      // Get name input
+      const nameInput = screen.getByLabelText('Name:');
+      
+      // Type invalid name first
+      await act(async () => {
+        fireEvent.change(nameInput, { target: { value: 'John123' } });
+      });
+      
+      // Verify error appears in the form
+      const formError = screen.getByText('Name should only contain letters and spaces. Numbers and symbols are not allowed.', { selector: '.error-message' });
+      expect(formError).toBeInTheDocument();
+      
+      // Change to valid name
+      await act(async () => {
+        fireEvent.change(nameInput, { target: { value: 'John Doe' } });
+      });
+      
+      // Verify error disappears
+      expect(screen.queryByText('Name should only contain letters and spaces. Numbers and symbols are not allowed.')).not.toBeInTheDocument();
+      
+      // Verify input no longer has error styling
+      expect(nameInput).not.toHaveClass('error');
+    });
+
     test('accepts valid form input', async () => {
       // Mock fetch to return empty data
       fetch.mockImplementationOnce(() => 
@@ -253,6 +383,8 @@ describe('Contact Manager App - Complete Tests', () => {
       expect(nameInput).toHaveValue('John Doe');
       expect(emailInput).toHaveValue('john@example.com');
     });
+
+
   });
 
   // User Interaction Tests

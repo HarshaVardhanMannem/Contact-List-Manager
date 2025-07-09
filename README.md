@@ -168,7 +168,8 @@ Contact-Manager/
 
 ### User Experience
 - **Modern UI**: Clean, responsive design with hover effects
-- **Form Validation**: Real-time validation with helpful error messages
+- **Form Validation**: Real-time validation with helpful error messages and visual indicators
+- **Name Validation**: Prevents numbers and symbols in names with immediate feedback
 - **Loading States**: Visual feedback during API operations
 - **Success/Error Messages**: Clear feedback for all user actions
 - **Responsive Design**: Works perfectly on desktop, tablet, and mobile
@@ -178,7 +179,8 @@ Contact-Manager/
 - **API Service Layer**: Clean separation of API calls
 - **Error Handling**: Comprehensive error handling and recovery
 - **RESTful API**: Well-designed backend endpoints
-- **Input Validation**: Both frontend and backend validation
+- **Input Validation**: Both frontend and backend validation with regex patterns
+- **Real-time Validation**: Immediate feedback with visual styling
 
 ---
 
@@ -213,7 +215,8 @@ npm test
 The application includes comprehensive tests covering:
 -  Component rendering
 -  User interactions
--  Form validation
+-  Form validation (including name format validation)
+-  Real-time validation feedback
 -  API endpoints
 -  Error handling
 
@@ -240,16 +243,27 @@ The application includes comprehensive tests covering:
 - **Empty search shows all contacts**
 
 ### Form Validation
-- **Required field validation**
-- **Email format validation**
-- **Duplicate email prevention**
-- **Real-time feedback**
+- **Required field validation** - Both name and email must be provided
+- **Email format validation** - Ensures valid email format using regex
+- **Name format validation** - Only letters and spaces allowed (regex: `/^[A-Za-z\s]+$/`)
+- **Duplicate email prevention** - Prevents adding contacts with existing emails
+- **Real-time feedback** - Immediate validation with visual indicators
+- **Visual error styling** - Red borders and background for invalid inputs
+- **Error message display** - Clear, user-friendly error messages
 
 ### Error Handling
 - **Network error recovery**
 - **User-friendly error messages**
 - **Graceful degradation**
 - **Loading states**
+
+### Validation Implementation Details
+- **Frontend Validation**: Real-time validation using React hooks and useEffect
+- **Backend Validation**: Server-side validation using express-validator middleware
+- **Regex Pattern**: `/^[A-Za-z\s]+$/` ensures only letters and spaces in names
+- **Error Messages**: Consistent error messages across frontend and backend
+- **Visual Feedback**: CSS classes for error states with smooth animations
+- **Focus Management**: Automatic focus on invalid fields for better UX
 
 ---
 
