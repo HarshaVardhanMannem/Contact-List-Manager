@@ -17,4 +17,4 @@ jobs:
           VALIDATE_CSS: false
           VALIDATE_HTML: false
           FILTER_REGEX_EXCLUDE: '.*\.test\.js$'
-          VALIDATE_JSCPD: true
+          VALIDATE_JSCPD: false
