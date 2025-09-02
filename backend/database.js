@@ -29,7 +29,7 @@ class ContactDatabase {
     try {
       // Connect to SQLite database file
       this.db = new Database(this.dbPath)
-      
+
       // Enable performance optimizations
       this.db.pragma('foreign_keys = ON')
       this.db.pragma('journal_mode = WAL')
@@ -44,7 +44,7 @@ class ContactDatabase {
 
       console.log('Database initialized successfully')
     } catch (error) {
-      console.error(`Error connecting to database:`, error)
+      console.error('Error connecting to database:', error)
       throw error
     }
   }
@@ -72,7 +72,7 @@ class ContactDatabase {
     try {
       // Create table if it doesn't exist
       this.db.exec(createTableSQL)
-      
+
       // Create indexes if they don't exist
       createIndexesSQL.forEach(sql => {
         this.db.exec(sql)
@@ -96,9 +96,9 @@ class ContactDatabase {
         FROM contacts 
         ORDER BY created_at DESC
       `)
-      
+
       const contacts = stmt.all()
-      
+
       // Convert SQLite results to match expected format
       return contacts.map(contact => ({
         _id: contact.id.toString(), // Convert to string to match MongoDB ObjectId format
@@ -125,11 +125,11 @@ class ContactDatabase {
         FROM contacts 
         WHERE email = ?
       `)
-      
+
       const contact = stmt.get(email)
-      
+
       if (!contact) return null
-      
+
       // Convert SQLite result to match expected format
       return {
         _id: contact.id.toString(),
@@ -156,11 +156,11 @@ class ContactDatabase {
         FROM contacts 
         WHERE id = ?
       `)
-      
+
       const contact = stmt.get(parseInt(id))
-      
+
       if (!contact) return null
-      
+
       // Convert SQLite result to match expected format
       return {
         _id: contact.id.toString(),
@@ -187,12 +187,12 @@ class ContactDatabase {
         INSERT INTO contacts (name, email, created_at)
         VALUES (?, ?, datetime('now'))
       `)
-      
+
       const result = stmt.run(name, email)
-      
+
       // Get the newly created contact
       const newContact = await this.getContactById(result.lastInsertRowid.toString())
-      
+
       return newContact
     } catch (error) {
       // Handle duplicate email error (SQLite constraint violation)
@@ -216,9 +216,9 @@ class ContactDatabase {
         DELETE FROM contacts 
         WHERE id = ?
       `)
-      
+
       const result = stmt.run(parseInt(id))
-      
+
       // Return true if a row was deleted, false otherwise
       return result.changes > 0
     } catch (error) {
@@ -242,9 +242,9 @@ class ContactDatabase {
         WHERE name LIKE ? OR email LIKE ?
         ORDER BY created_at DESC
       `)
-      
+
       const contacts = stmt.all(searchTerm, searchTerm)
-      
+
       // Convert SQLite results to match expected format
       return contacts.map(contact => ({
         _id: contact.id.toString(),
