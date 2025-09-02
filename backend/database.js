@@ -1,58 +1,84 @@
-// Import required MongoDB modules
-// MongoClient: Main driver for connecting to MongoDB
-// ObjectId: Used for creating and working with MongoDB document IDs
-const { MongoClient, ObjectId } = require('mongodb')
+// Import required SQLite modules
+// Database: Main driver for SQLite operations
+const Database = require('better-sqlite3')
+const path = require('path')
 
 /**
  * ContactDatabase Class
  * Handles all database operations for the Contact Manager application
- * Provides methods for CRUD operations on contacts collection
+ * Provides methods for CRUD operations on contacts table
  */
 class ContactDatabase {
   /**
    * Constructor - Initializes database connection parameters
-   * Sets up MongoDB connection URI, database name, and client instance
+   * Sets up SQLite database file path and database instance
    */
   constructor () {
-    // MongoDB connection URI - connects to local MongoDB instance
-    this.uri = 'mongodb://127.0.0.1'
-    // Name of the database to use
-    this.dbName = 'Contacts'
-    // Create new MongoDB client instance
-    this.client = new MongoClient(this.uri)
+    // SQLite database file path - creates database in the same directory
+    this.dbPath = path.join(__dirname, 'contacts.db')
     // Will hold the database reference after connection
     this.db = null
-    // Will hold the collection reference after connection
-    this.collection = null
   }
 
   /**
-   * Establishes connection to MongoDB database
-   * Creates necessary indexes for performance optimization
+   * Establishes connection to SQLite database
+   * Enables performance optimizations and creates necessary indexes
    * @throws {Error} If connection fails
    */
   async connect () {
     try {
-      // Connect to MongoDB server
-      await this.client.connect()
-      console.log('Connected to MongoDB ...')
+      // Connect to SQLite database file
+      this.db = new Database(this.dbPath)
+      
+      // Enable performance optimizations
+      this.db.pragma('foreign_keys = ON')
+      this.db.pragma('journal_mode = WAL')
+      this.db.pragma('synchronous = NORMAL')
+      this.db.pragma('temp_store = MEMORY')
+      this.db.pragma('mmap_size = 30000000000')
 
-      // Get database reference
-      this.db = this.client.db(this.dbName)
-      // Get collection reference for contacts
-      this.collection = this.db.collection('contacts')
+      console.log('Connected to SQLite database ...')
 
-      // Create indexes for better performance
-      // Unique index on email to prevent duplicate emails
-      await this.collection.createIndex({ email: 1 }, { unique: true })
-      // Index on name for faster name-based queries
-      await this.collection.createIndex({ name: 1 })
-      // Index on createdAt for faster sorting by creation date
-      await this.collection.createIndex({ createdAt: -1 })
+      // Verify table exists, if not create it
+      await this.ensureTableExists()
 
       console.log('Database initialized successfully')
     } catch (error) {
-      console.error(`Error connecting to ${this.dbName}:`, error)
+      console.error(`Error connecting to database:`, error)
+      throw error
+    }
+  }
+
+  /**
+   * Ensures the contacts table exists with proper schema
+   * Creates table and indexes if they don't exist
+   */
+  async ensureTableExists () {
+    const createTableSQL = `
+      CREATE TABLE IF NOT EXISTS contacts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL CHECK(length(name) > 0 AND length(name) <= 50),
+        email TEXT NOT NULL UNIQUE CHECK(email LIKE '%_@__%.__%'),
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `
+
+    const createIndexesSQL = [
+      'CREATE INDEX IF NOT EXISTS idx_contacts_email ON contacts(email)',
+      'CREATE INDEX IF NOT EXISTS idx_contacts_name ON contacts(name)',
+      'CREATE INDEX IF NOT EXISTS idx_contacts_created_at ON contacts(created_at DESC)'
+    ]
+
+    try {
+      // Create table if it doesn't exist
+      this.db.exec(createTableSQL)
+      
+      // Create indexes if they don't exist
+      createIndexesSQL.forEach(sql => {
+        this.db.exec(sql)
+      })
+    } catch (error) {
+      console.error('Error ensuring table exists:', error)
       throw error
     }
   }
@@ -65,13 +91,21 @@ class ContactDatabase {
    */
   async getAllContacts () {
     try {
-      // Find all documents in contacts collection
-      // Sort by createdAt field in descending order (newest first)
-      const contacts = await this.collection
-        .find({})
-        .sort({ createdAt: -1 })
-        .toArray()
-      return contacts
+      const stmt = this.db.prepare(`
+        SELECT id, name, email, created_at as createdAt
+        FROM contacts 
+        ORDER BY created_at DESC
+      `)
+      
+      const contacts = stmt.all()
+      
+      // Convert SQLite results to match expected format
+      return contacts.map(contact => ({
+        _id: contact.id.toString(), // Convert to string to match MongoDB ObjectId format
+        name: contact.name,
+        email: contact.email,
+        createdAt: new Date(contact.createdAt)
+      }))
     } catch (error) {
       console.error('Error getting all contacts:', error)
       throw error
@@ -86,9 +120,23 @@ class ContactDatabase {
    */
   async getContactByEmail (email) {
     try {
-      // Find one document where email matches the provided email
-      const contact = await this.collection.findOne({ email })
-      return contact
+      const stmt = this.db.prepare(`
+        SELECT id, name, email, created_at as createdAt
+        FROM contacts 
+        WHERE email = ?
+      `)
+      
+      const contact = stmt.get(email)
+      
+      if (!contact) return null
+      
+      // Convert SQLite result to match expected format
+      return {
+        _id: contact.id.toString(),
+        name: contact.name,
+        email: contact.email,
+        createdAt: new Date(contact.createdAt)
+      }
     } catch (error) {
       console.error('Error getting contact by email:', error)
       throw error
@@ -96,16 +144,30 @@ class ContactDatabase {
   }
 
   /**
-   * Finds a contact by their MongoDB ObjectId
-   * @param {string} id - The MongoDB ObjectId as a string
+   * Finds a contact by their ID
+   * @param {string} id - The contact ID as a string
    * @returns {Object|null} Contact object if found, null otherwise
    * @throws {Error} If database operation fails
    */
   async getContactById (id) {
     try {
-      // Convert string ID to MongoDB ObjectId and find the document
-      const contact = await this.collection.findOne({ _id: new ObjectId(id) })
-      return contact
+      const stmt = this.db.prepare(`
+        SELECT id, name, email, created_at as createdAt
+        FROM contacts 
+        WHERE id = ?
+      `)
+      
+      const contact = stmt.get(parseInt(id))
+      
+      if (!contact) return null
+      
+      // Convert SQLite result to match expected format
+      return {
+        _id: contact.id.toString(),
+        name: contact.name,
+        email: contact.email,
+        createdAt: new Date(contact.createdAt)
+      }
     } catch (error) {
       console.error('Error getting contact by ID:', error)
       throw error
@@ -121,24 +183,20 @@ class ContactDatabase {
    */
   async addContact (name, email) {
     try {
-      // Create contact object with current timestamp
-      const contact = {
-        name,
-        email,
-        createdAt: new Date() // Automatically set creation timestamp
-      }
-
-      // Insert the contact into the database
-      const result = await this.collection.insertOne(contact)
-
-      // Return the newly created contact with the generated _id
-      return {
-        _id: result.insertedId, // MongoDB-generated unique ID
-        ...contact
-      }
+      const stmt = this.db.prepare(`
+        INSERT INTO contacts (name, email, created_at)
+        VALUES (?, ?, datetime('now'))
+      `)
+      
+      const result = stmt.run(name, email)
+      
+      // Get the newly created contact
+      const newContact = await this.getContactById(result.lastInsertRowid.toString())
+      
+      return newContact
     } catch (error) {
-      // Handle duplicate email error (MongoDB error code 11000)
-      if (error.code === 11000) {
+      // Handle duplicate email error (SQLite constraint violation)
+      if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
         throw new Error('Email already exists')
       }
       console.error('Error adding contact:', error)
@@ -148,16 +206,21 @@ class ContactDatabase {
 
   /**
    * Deletes a contact from the database by their ID
-   * @param {string} id - The MongoDB ObjectId as a string
+   * @param {string} id - The contact ID as a string
    * @returns {boolean} True if contact was deleted, false if not found
    * @throws {Error} If database operation fails
    */
   async deleteContact (id) {
     try {
-      // Delete one document where _id matches the provided ObjectId
-      const result = await this.collection.deleteOne({ _id: new ObjectId(id) })
-      // Return true if a document was deleted, false otherwise
-      return result.deletedCount > 0
+      const stmt = this.db.prepare(`
+        DELETE FROM contacts 
+        WHERE id = ?
+      `)
+      
+      const result = stmt.run(parseInt(id))
+      
+      // Return true if a row was deleted, false otherwise
+      return result.changes > 0
     } catch (error) {
       console.error('Error deleting contact:', error)
       throw error
@@ -165,27 +228,30 @@ class ContactDatabase {
   }
 
   /**
-   * Searches for contacts by name or email using case-insensitive regex
+   * Searches for contacts by name or email using case-insensitive LIKE
    * @param {string} query - The search query string
    * @returns {Array} Array of matching contact objects
    * @throws {Error} If database operation fails
    */
   async searchContacts (query) {
     try {
-      // Find documents where name OR email matches the query
-      // $regex: Uses regular expression for pattern matching
-      // $options: 'i' makes the search case-insensitive
-      const contacts = await this.collection
-        .find({
-          $or: [
-            { name: { $regex: query, $options: 'i' } },
-            { email: { $regex: query, $options: 'i' } }
-          ]
-        })
-        .sort({ createdAt: -1 }) // Sort by creation date (newest first)
-        .toArray()
-
-      return contacts
+      const searchTerm = `%${query}%`
+      const stmt = this.db.prepare(`
+        SELECT id, name, email, created_at as createdAt
+        FROM contacts 
+        WHERE name LIKE ? OR email LIKE ?
+        ORDER BY created_at DESC
+      `)
+      
+      const contacts = stmt.all(searchTerm, searchTerm)
+      
+      // Convert SQLite results to match expected format
+      return contacts.map(contact => ({
+        _id: contact.id.toString(),
+        name: contact.name,
+        email: contact.email,
+        createdAt: new Date(contact.createdAt)
+      }))
     } catch (error) {
       console.error('Error searching contacts:', error)
       throw error
@@ -199,9 +265,9 @@ class ContactDatabase {
    */
   async getContactCount () {
     try {
-      // Count all documents in the contacts collection
-      const count = await this.collection.countDocuments()
-      return count
+      const stmt = this.db.prepare('SELECT COUNT(*) as count FROM contacts')
+      const result = stmt.get()
+      return result.count
     } catch (error) {
       console.error('Error getting contact count:', error)
       throw error
@@ -209,11 +275,13 @@ class ContactDatabase {
   }
 
   /**
-   * Closes the MongoDB connection
+   * Closes the SQLite database connection
    * Should be called when the application shuts down
    */
   async close () {
-    await this.client.close()
+    if (this.db) {
+      this.db.close()
+    }
   }
 }
 

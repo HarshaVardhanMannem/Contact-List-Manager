@@ -1,6 +1,6 @@
 # Contact Manager Application
 
-A modern, full-stack contact management application built with React.js frontend and Node.js backend.
+A modern, full-stack contact management application built with React.js frontend and Node.js backend, now using SQLite for lightweight, serverless database storage.
 
 ---
 
@@ -15,6 +15,7 @@ A modern, full-stack contact management application built with React.js frontend
    ```bash
    cd backend
    npm install
+   npm run init-db    # Initialize SQLite database with sample data
    npm start
    # The backend runs on http://localhost:3001
    ```
@@ -30,12 +31,13 @@ A modern, full-stack contact management application built with React.js frontend
 
 ##  Solution Overview & Design Decisions
 
-This project demonstrates a clean, maintainable approach to building a full-stack Contact List Manager. The backend is built with Node.js/Express and MongoDB, while the frontend uses React for a responsive, dynamic UI.
+This project demonstrates a clean, maintainable approach to building a full-stack Contact List Manager. The backend is built with Node.js/Express and SQLite, while the frontend uses React for a responsive, dynamic UI.
 
 **Key design decisions and trade-offs:**
 - **Simplicity & Clarity:** The code is organized for readability and maintainability, with clear separation between backend and frontend.
+- **Database Choice:** SQLite provides a lightweight, serverless database perfect for small to medium applications without external dependencies.
 - **Validation:** Both frontend and backend validate input to prevent empty fields and duplicate emails.
-- **Search:** Efficient search is implemented using MongoDB indexes and regex queries.
+- **Search:** Efficient search is implemented using SQLite indexes and LIKE queries.
 - **Error Handling:** All edge cases (empty fields, duplicates, invalid input) are handled gracefully with user-friendly messages.
 - **Bonus Features:** Delete functionality, basic styling, and tests are included (see below).
 - **Extensibility:** The codebase is structured to allow easy addition of new features (e.g., phone number, pagination, authentication).
@@ -98,25 +100,35 @@ flowchart TD
 
 ## Database Configuration
 
-The backend uses **MongoDB** for storing contacts.
+The backend uses **SQLite** for storing contacts, providing a lightweight, serverless database solution.
 
-- **Default URI:** `mongodb://127.0.0.1`
-- **Database Name:** `Contacts`
-- **Collection Name:** `contacts`
+- **Database File:** `contacts.db` (automatically created in backend directory)
+- **Table Name:** `contacts`
 - **Configuration Location:** `backend/database.js`
 - **Indexes:**
   - Unique index on `email`
   - Index on `name`
-  - Index on `createdAt`
+  - Index on `created_at` (descending)
 
-**To change the database URI or name:**
-- Edit the `this.uri` and `this.dbName` fields in the `ContactDatabase` class constructor in `backend/database.js`.
-- For production, you can use an environment variable (e.g., `MONGODB_URI`) and update the code to use `process.env.MONGODB_URI` if present.
+**Database Schema:**
+```sql
+CREATE TABLE contacts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL CHECK(length(name) > 0 AND length(name) <= 50),
+  email TEXT NOT NULL UNIQUE CHECK(email LIKE '%_@__%.__%'),
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+```
 
-**Example (in `backend/database.js`):**
-```js
-this.uri = process.env.MONGODB_URI || "mongodb://127.0.0.1";
-this.dbName = process.env.DB_NAME || "Contacts";
+**Performance Features:**
+- **WAL Mode**: Write-Ahead Logging for better concurrent access
+- **Prepared Statements**: Reusable SQL statements for optimal performance
+- **Memory Optimization**: Configurable memory settings for better performance
+
+**To initialize the database:**
+```bash
+cd backend
+npm run init-db
 ```
 
 ---
@@ -126,16 +138,19 @@ this.dbName = process.env.DB_NAME || "Contacts";
 ```
 Contact-Manager/
 ├── backend/
-│   ├── database.js
-│   ├── server.js
-│   ├── server.basic.test.js
-│   ├── package.json
+│   ├── database.js          # SQLite database operations
+│   ├── server.js            # Express server and API routes
+│   ├── init-db.js           # Database initialization script
+│   ├── server.basic.test.js # Backend tests
+│   ├── package.json         # Dependencies and scripts
 │   ├── package-lock.json
-│   └── node_modules/           # (ignored by git)
+│   ├── .gitignore           # Excludes SQLite database files
+│   ├── README.md            # Backend-specific documentation
+│   └── node_modules/        # (ignored by git)
 ├── frontend/
 │   ├── package.json
 │   ├── package-lock.json
-│   ├── node_modules/           # (ignored by git)
+│   ├── node_modules/        # (ignored by git)
 │   ├── public/
 │   │   └── index.html
 │   └── src/
@@ -152,6 +167,9 @@ Contact-Manager/
 │       └── services/
 │           ├── api.js
 │           └── api.test.js
+├── .github/
+│   └── workflows/
+│       └── superlint.yaml   # GitHub Actions linting workflow
 ├── .gitignore
 └── README.md
 ```
@@ -181,6 +199,7 @@ Contact-Manager/
 - **RESTful API**: Well-designed backend endpoints
 - **Input Validation**: Both frontend and backend validation with regex patterns
 - **Real-time Validation**: Immediate feedback with visual styling
+- **SQLite Database**: Lightweight, serverless database with optimized performance
 
 ---
 
@@ -188,6 +207,7 @@ Contact-Manager/
 - **Delete Contact**: Users can delete contacts with confirmation.
 - **Basic Styling**: The UI is styled for clarity and usability.
 - **Basic Tests**: Key backend and frontend logic is covered by tests.
+- **SQLite Integration**: Serverless database perfect for deployment without external dependencies.
 
 ---
 
@@ -239,7 +259,7 @@ The application includes comprehensive tests covering:
 ### Search Functionality
 - **Real-time search** as you type
 - **Search by name AND email**
-- **Case-insensitive matching**
+- **Case-insensitive matching** using SQLite LIKE queries
 - **Empty search shows all contacts**
 
 ### Form Validation
@@ -267,6 +287,18 @@ The application includes comprehensive tests covering:
 
 ---
 
+## Migration from MongoDB
+
+This application has been successfully migrated from MongoDB to SQLite, providing several benefits:
+
+- **No External Dependencies**: Single file database, no server setup required
+- **Better Performance**: Optimized with WAL mode, indexes, and prepared statements
+- **Easier Deployment**: No need to install/configure MongoDB
+- **Same API Interface**: Frontend code works without any changes
+- **Lightweight**: Perfect for small to medium applications
+
+---
+
 ## Deployment
 
 ### Frontend Deployment
@@ -279,9 +311,10 @@ Deploy the `build` folder to your hosting service.
 ### Backend Deployment
 ```bash
 cd backend
+npm run init-db    # Initialize database on first deployment
 npm start
 ```
-Deploy to your Node.js hosting service (Heroku, Vercel, etc.).
+Deploy to your Node.js hosting service (Heroku, Vercel, etc.). The SQLite database will be created automatically.
 
 ---
 
@@ -291,4 +324,4 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ---
 
-**Built using React.js and Node.js** 
+**Built using React.js, Node.js, and SQLite** 

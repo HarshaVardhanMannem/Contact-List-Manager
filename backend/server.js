@@ -101,12 +101,24 @@ app.post(
           'A contact with this email already exists'
         )
       }
-      const contact = await db.addContact(name, email)
-      res.status(201).json({
-        success: true,
-        data: contact,
-        message: 'Contact added successfully'
-      })
+      
+      try {
+        const contact = await db.addContact(name, email)
+        res.status(201).json({
+          success: true,
+          data: contact,
+          message: 'Contact added successfully'
+        })
+      } catch (error) {
+        if (error.message === 'Email already exists') {
+          return errorResponse(
+            res,
+            409,
+            'A contact with this email already exists'
+          )
+        }
+        throw error
+      }
     } catch (error) {
       console.error('Error adding contact:', error)
       errorResponse(res, 500, 'Failed to add contact')
