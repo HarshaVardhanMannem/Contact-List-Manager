@@ -1,5 +1,5 @@
 // Import supertest for HTTP testing
-const request = require('supertest');
+const request = require('supertest')
 
 // Mock the database module to isolate tests from actual database
 // This ensures tests run quickly and don't depend on external services
@@ -21,16 +21,16 @@ jest.mock('./database', () => {
       createdAt: new Date()
     }),
     deleteContact: jest.fn().mockResolvedValue(true)
-  }));
-});
+  }))
+})
 
 // Import required dependencies for test server setup
-const express = require('express');
-const cors = require('cors');
-const { body, validationResult } = require('express-validator');
+const express = require('express')
+const cors = require('cors')
+const { body, validationResult } = require('express-validator')
 
 // Create Express app for testing
-const app = express();
+const app = express()
 
 /**
  * Helper function for consistent error responses
@@ -39,16 +39,16 @@ const app = express();
  * @param {string} message - Error message
  * @returns {Object} JSON error response
  */
-function errorResponse(res, status, message) {
-  return res.status(status).json({ success: false, message });
+function errorResponse (res, status, message) {
+  return res.status(status).json({ success: false, message })
 }
 
 // --- MIDDLEWARE SETUP ---
 
 // Enable CORS for cross-origin requests
-app.use(cors());
+app.use(cors())
 // Parse JSON request bodies
-app.use(express.json());
+app.use(express.json())
 
 // Mock database instance with predefined responses
 // Each method returns a Promise that resolves to test data
@@ -67,7 +67,7 @@ const mockDb = {
     createdAt: new Date()
   }),
   deleteContact: jest.fn().mockResolvedValue(true)
-};
+}
 
 // --- VALIDATION MIDDLEWARE ---
 
@@ -87,22 +87,22 @@ const validateContact = [
     .isEmail()
     .normalizeEmail()
     .withMessage('Please provide a valid email address')
-];
+]
 
 /**
  * Error handling middleware for validation errors
  * Checks for validation errors and returns them if any exist
  */
 const handleValidationErrors = (req, res, next) => {
-  const errors = validationResult(req);
+  const errors = validationResult(req)
   if (!errors.isEmpty()) {
     return res.status(400).json({
       success: false,
       errors: errors.array()
-    });
+    })
   }
-  next();
-};
+  next()
+}
 
 // --- API ROUTES FOR TESTING ---
 
@@ -112,12 +112,12 @@ const handleValidationErrors = (req, res, next) => {
  */
 app.get('/api/contacts', async (req, res) => {
   try {
-    const contacts = await mockDb.getAllContacts();
-    res.json({ success: true, data: contacts });
+    const contacts = await mockDb.getAllContacts()
+    res.json({ success: true, data: contacts })
   } catch (error) {
-    errorResponse(res, 500, 'Failed to fetch contacts');
+    errorResponse(res, 500, 'Failed to fetch contacts')
   }
-});
+})
 
 /**
  * GET /api/contacts/search - Search contacts
@@ -125,16 +125,16 @@ app.get('/api/contacts', async (req, res) => {
  */
 app.get('/api/contacts/search', async (req, res) => {
   try {
-    const { q } = req.query;
+    const { q } = req.query
     if (!q || q.trim() === '') {
-      return res.json({ success: true, data: [] });
+      return res.json({ success: true, data: [] })
     }
-    const contacts = await mockDb.searchContacts(q.trim());
-    res.json({ success: true, data: contacts });
+    const contacts = await mockDb.searchContacts(q.trim())
+    res.json({ success: true, data: contacts })
   } catch (error) {
-    errorResponse(res, 500, 'Failed to search contacts');
+    errorResponse(res, 500, 'Failed to search contacts')
   }
-});
+})
 
 /**
  * POST /api/contacts - Add new contact
@@ -142,21 +142,21 @@ app.get('/api/contacts/search', async (req, res) => {
  */
 app.post('/api/contacts', validateContact, handleValidationErrors, async (req, res) => {
   try {
-    const { name, email } = req.body;
-    const existingContact = await mockDb.getContactByEmail(email);
+    const { name, email } = req.body
+    const existingContact = await mockDb.getContactByEmail(email)
     if (existingContact) {
-      return errorResponse(res, 409, 'A contact with this email already exists');
+      return errorResponse(res, 409, 'A contact with this email already exists')
     }
-    const contact = await mockDb.addContact(name, email);
+    const contact = await mockDb.addContact(name, email)
     res.status(201).json({
       success: true,
       data: contact,
       message: 'Contact added successfully'
-    });
+    })
   } catch (error) {
-    errorResponse(res, 500, 'Failed to add contact');
+    errorResponse(res, 500, 'Failed to add contact')
   }
-});
+})
 
 /**
  * DELETE /api/contacts/:id - Delete contact
@@ -164,19 +164,19 @@ app.post('/api/contacts', validateContact, handleValidationErrors, async (req, r
  */
 app.delete('/api/contacts/:id', async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params
     if (!id) {
-      return errorResponse(res, 400, 'Invalid contact ID');
+      return errorResponse(res, 400, 'Invalid contact ID')
     }
-    const deleted = await mockDb.deleteContact(id);
+    const deleted = await mockDb.deleteContact(id)
     if (!deleted) {
-      return errorResponse(res, 404, 'Contact not found');
+      return errorResponse(res, 404, 'Contact not found')
     }
-    res.json({ success: true, message: 'Contact deleted successfully' });
+    res.json({ success: true, message: 'Contact deleted successfully' })
   } catch (error) {
-    errorResponse(res, 500, 'Failed to delete contact');
+    errorResponse(res, 500, 'Failed to delete contact')
   }
-});
+})
 
 /**
  * GET /api/health - Health check endpoint
@@ -187,8 +187,8 @@ app.get('/api/health', (req, res) => {
     success: true,
     message: 'Server is running',
     timestamp: new Date().toISOString()
-  });
-});
+  })
+})
 
 // --- TEST SUITES ---
 
@@ -199,8 +199,8 @@ app.get('/api/health', (req, res) => {
 describe('Contact Manager API - Basic Tests', () => {
   // Clear all mocks before each test to ensure clean state
   beforeEach(() => {
-    jest.clearAllMocks();
-  });
+    jest.clearAllMocks()
+  })
 
   /**
    * Test suite for GET /api/contacts endpoint
@@ -210,13 +210,13 @@ describe('Contact Manager API - Basic Tests', () => {
     test('should return all contacts', async () => {
       const response = await request(app)
         .get('/api/contacts')
-        .expect(200);
-      
-      expect(response.body).toHaveProperty('success', true);
-      expect(response.body).toHaveProperty('data');
-      expect(Array.isArray(response.body.data)).toBe(true);
-    });
-  });
+        .expect(200)
+
+      expect(response.body).toHaveProperty('success', true)
+      expect(response.body).toHaveProperty('data')
+      expect(Array.isArray(response.body.data)).toBe(true)
+    })
+  })
 
   /**
    * Test suite for GET /api/contacts/search endpoint
@@ -226,21 +226,21 @@ describe('Contact Manager API - Basic Tests', () => {
     test('should return empty array for empty query', async () => {
       const response = await request(app)
         .get('/api/contacts/search')
-        .expect(200);
-      
-      expect(response.body).toHaveProperty('success', true);
-      expect(response.body.data).toEqual([]);
-    });
+        .expect(200)
+
+      expect(response.body).toHaveProperty('success', true)
+      expect(response.body.data).toEqual([])
+    })
 
     test('should return search results for valid query', async () => {
       const response = await request(app)
         .get('/api/contacts/search?q=test')
-        .expect(200);
-      
-      expect(response.body).toHaveProperty('success', true);
-      expect(response.body).toHaveProperty('data');
-    });
-  });
+        .expect(200)
+
+      expect(response.body).toHaveProperty('success', true)
+      expect(response.body).toHaveProperty('data')
+    })
+  })
 
   /**
    * Test suite for POST /api/contacts endpoint
@@ -251,107 +251,107 @@ describe('Contact Manager API - Basic Tests', () => {
       const contactData = {
         name: 'Test User',
         email: 'test@example.com'
-      };
+      }
 
       const response = await request(app)
         .post('/api/contacts')
         .send(contactData)
-        .expect(201);
-      
-      expect(response.body).toHaveProperty('success', true);
-      expect(response.body).toHaveProperty('data');
-      expect(response.body).toHaveProperty('message', 'Contact added successfully');
-    });
+        .expect(201)
+
+      expect(response.body).toHaveProperty('success', true)
+      expect(response.body).toHaveProperty('data')
+      expect(response.body).toHaveProperty('message', 'Contact added successfully')
+    })
 
     test('should reject contact with missing name', async () => {
       const contactData = {
         email: 'test@example.com'
-      };
+      }
 
       const response = await request(app)
         .post('/api/contacts')
         .send(contactData)
-        .expect(400);
-      
-      expect(response.body).toHaveProperty('success', false);
-      expect(response.body).toHaveProperty('errors');
-    });
+        .expect(400)
+
+      expect(response.body).toHaveProperty('success', false)
+      expect(response.body).toHaveProperty('errors')
+    })
 
     test('should reject contact with invalid email', async () => {
       const contactData = {
         name: 'Test User',
         email: 'invalid-email'
-      };
+      }
 
       const response = await request(app)
         .post('/api/contacts')
         .send(contactData)
-        .expect(400);
-      
-      expect(response.body).toHaveProperty('success', false);
-      expect(response.body).toHaveProperty('errors');
-    });
+        .expect(400)
+
+      expect(response.body).toHaveProperty('success', false)
+      expect(response.body).toHaveProperty('errors')
+    })
 
     test('should reject contact with name containing numbers', async () => {
       const contactData = {
         name: 'John123',
         email: 'test@example.com'
-      };
+      }
 
       const response = await request(app)
         .post('/api/contacts')
         .send(contactData)
-        .expect(400);
-      
-      expect(response.body).toHaveProperty('success', false);
-      expect(response.body).toHaveProperty('errors');
+        .expect(400)
+
+      expect(response.body).toHaveProperty('success', false)
+      expect(response.body).toHaveProperty('errors')
       expect(response.body.errors).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
             msg: 'Name must only contain letters and spaces'
           })
         ])
-      );
-    });
+      )
+    })
 
     test('should reject contact with name containing symbols', async () => {
       const contactData = {
         name: 'John@Doe',
         email: 'test@example.com'
-      };
+      }
 
       const response = await request(app)
         .post('/api/contacts')
         .send(contactData)
-        .expect(400);
-      
-      expect(response.body).toHaveProperty('success', false);
-      expect(response.body).toHaveProperty('errors');
+        .expect(400)
+
+      expect(response.body).toHaveProperty('success', false)
+      expect(response.body).toHaveProperty('errors')
       expect(response.body.errors).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
             msg: 'Name must only contain letters and spaces'
           })
         ])
-      );
-    });
+      )
+    })
 
     test('should accept contact with name containing only letters and spaces', async () => {
       const contactData = {
         name: 'John Doe Smith',
         email: 'test@example.com'
-      };
+      }
 
       const response = await request(app)
         .post('/api/contacts')
         .send(contactData)
-        .expect(201);
-      
-      expect(response.body).toHaveProperty('success', true);
-      expect(response.body).toHaveProperty('data');
-      expect(response.body).toHaveProperty('message', 'Contact added successfully');
-    });
-  });
+        .expect(201)
+
+      expect(response.body).toHaveProperty('success', true)
+      expect(response.body).toHaveProperty('data')
+      expect(response.body).toHaveProperty('message', 'Contact added successfully')
+    })
+  })
 
   /**
    * Test suite for DELETE /api/contacts/:id endpoint
@@ -361,18 +361,18 @@ describe('Contact Manager API - Basic Tests', () => {
     test('should delete contact with valid ID', async () => {
       const response = await request(app)
         .delete('/api/contacts/123')
-        .expect(200);
-      
-      expect(response.body).toHaveProperty('success', true);
-      expect(response.body).toHaveProperty('message', 'Contact deleted successfully');
-    });
+        .expect(200)
+
+      expect(response.body).toHaveProperty('success', true)
+      expect(response.body).toHaveProperty('message', 'Contact deleted successfully')
+    })
 
     test('should reject delete with missing ID', async () => {
       const response = await request(app)
         .delete('/api/contacts/')
-        .expect(404);
-    });
-  });
+        .expect(404)
+    })
+  })
 
   /**
    * Test suite for GET /api/health endpoint
@@ -382,11 +382,11 @@ describe('Contact Manager API - Basic Tests', () => {
     test('should return health status', async () => {
       const response = await request(app)
         .get('/api/health')
-        .expect(200);
-      
-      expect(response.body).toHaveProperty('success', true);
-      expect(response.body).toHaveProperty('message', 'Server is running');
-      expect(response.body).toHaveProperty('timestamp');
-    });
-  });
-}); 
+        .expect(200)
+
+      expect(response.body).toHaveProperty('success', true)
+      expect(response.body).toHaveProperty('message', 'Server is running')
+      expect(response.body).toHaveProperty('timestamp')
+    })
+  })
+})
