@@ -16,5 +16,6 @@ jobs:
           VALIDATE_MARKDOWN: false
           VALIDATE_CSS: false
           VALIDATE_HTML: false
-          FILTER_REGEX_EXCLUDE: '.*\.test\.js$'
           VALIDATE_JSCPD: false
+          VALIDATE_NATURAL_LANGUAGE: false  # This disables textlint
+          FILTER_REGEX_EXCLUDE: '.*\.test\.js$'
