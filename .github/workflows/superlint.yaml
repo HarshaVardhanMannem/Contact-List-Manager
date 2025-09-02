@@ -1,7 +1,5 @@
 name: Super Linter
-
 on: push
-
 jobs:
   super-linter:
     name: Lint Code Base
@@ -9,7 +7,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
+        
       - name: Run Super Linter
         uses: github/super-linter@v5
         env:
@@ -18,4 +16,5 @@ jobs:
           VALIDATE_MARKDOWN: false
           VALIDATE_CSS: false
           VALIDATE_HTML: false
-          
+          FILTER_REGEX_EXCLUDE: '.*\.test\.js$'
+          VALIDATE_JSCPD: true
