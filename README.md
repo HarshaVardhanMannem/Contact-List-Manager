@@ -145,12 +145,10 @@ Contact-Manager/
 │   ├── package.json         # Dependencies and scripts
 │   ├── package-lock.json
 │   ├── .gitignore           # Excludes SQLite database files
-│   ├── README.md            # Backend-specific documentation
-│   └── node_modules/        # (ignored by git)
+│   └── README.md            # Backend-specific documentation
 ├── frontend/
 │   ├── package.json
 │   ├── package-lock.json
-│   ├── node_modules/        # (ignored by git)
 │   ├── public/
 │   │   └── index.html
 │   └── src/
@@ -169,7 +167,7 @@ Contact-Manager/
 │           └── api.test.js
 ├── .github/
 │   └── workflows/
-│       └── superlint.yaml   # GitHub Actions linting workflow
+│       └── superlint.yaml   # GitHub Actions CI pipeline
 ├── .gitignore
 └── README.md
 ```
@@ -315,6 +313,8 @@ npm run init-db    # Initialize database on first deployment
 npm start
 ```
 Deploy to your Node.js hosting service (Heroku, Vercel, etc.). The SQLite database will be created automatically.
+
+**Note**: For production deployments on EC2 or other cloud platforms, ensure you have proper environment variables configured and database persistence set up.
 
 ---
 
