@@ -68,7 +68,6 @@ try {
   console.log('✅ Sample data inserted successfully')
   console.log(`📁 Database created at: ${dbPath}`)
   console.log('🚀 Database initialization completed!')
-
 } catch (error) {
   console.error('❌ Error initializing database:', error)
   process.exit(1)
